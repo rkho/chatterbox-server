@@ -33,6 +33,12 @@ var requestHandler = function(request, response) {
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = "text/plain";
 
+  if (request.url !== '/classes/messages'){
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
+  }
+
   if (request.method === 'GET'){
     statusCode = 200;
     response.writeHead(statusCode, headers);
