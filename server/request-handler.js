@@ -1,3 +1,7 @@
+var url = require('url');
+var fs = require('fs');
+
+
 /*************************************************************
 
 You should implement your request handler function in this file.
@@ -12,6 +16,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 var dataObj = {results: []};
+var id = 0;
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -33,20 +38,34 @@ var requestHandler = function(request, response) {
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = "text/plain";
 
-  if (request.url !== '/classes/messages'){
-    statusCode = 404;
-    response.writeHead(statusCode, headers);
+  if (request.url === '/'){
+    // try{
+    //   response.writeHead(200, {"Content-Type": "text/html"});
+    //   fs.createReadStream('../client/client/index.html').pipe(response);
+    // } finally {
+    //   console.log(response);
+    //   response.end();
+    // }
+    fs.readFile('../client/client/index.html', function(err, html){
+      if(err){
+        throw err;
+      }
+      response.writeHead(200, {"Content-Type":"text/html"});
+      response.write(html);
+    console.log(response);
     response.end();
+    });
   }
 
-  if (request.method === 'GET'){
+
+  else if (request.method === 'GET' && request.url === '/classes/messages'){
     statusCode = 200;
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(dataObj));
 
   }
 
-  if (request.method === 'POST'){
+  else if (request.method === 'POST' && request.url === '/classes/messages'){
     console.log('Your POST request has been received!');
     statusCode = 201;
     response.writeHead(statusCode, headers);
@@ -55,18 +74,26 @@ var requestHandler = function(request, response) {
       body += data;
     })
     request.on('end', function () {
-      dataObj.results.push(JSON.parse(body));
+      var messageObj = JSON.parse(body);
+      messageObj.objectId = id;
+      id++;
+      dataObj.results.push(messageObj);
     });
     response.end();
     // console.log(dataObj);
   }
 
-  if (request.method === 'OPTIONS'){
+  else if (request.method === 'OPTIONS' && request.url === '/classes/messages'){
     statusCode = 200;
     response.writeHead(statusCode, headers);
     response.end();
   }
 
+  else{
+    statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
+  }
   // The outgoing status.
 
   // See the note below about CORS headers.
